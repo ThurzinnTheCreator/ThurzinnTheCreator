@@ -1,1 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>A SENHA FINAL — ARQUIVO 01</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#020303;color:#cfd8d2;font-family:"Courier New",monospace;min-height:100%;overflow-x:hidden}
+body{background:radial-gradient(circle at 50% 40%,#101512 0,#030504 45%,#000 100%)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px)}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:98;box-shadow:inset 0 0 100px #000}
+#app{width:min(950px,94%);margin:0 auto;padding:22px 0 50px}
+header{border:1px solid #25352b;padding:22px;background:#050807;box-shadow:0 0 30px #000;margin-bottom:15px}
+.top{display:flex;justify-content:space-between;color:#56635b;font-size:11px}
+h1{font-size:clamp(32px,8vw,72px);letter-spacing:8px;color:#e4ece6;margin:20px 0 0;text-shadow:0 0 15px #52635a}
+h2{color:#b9c8bf;letter-spacing:2px}
+.sub{color:#66736b;margin-top:5px}
+.screen{display:none}.screen.active{display:block}
+.panel{border:1px solid #202d25;background:rgba(4,7,5,.94);padding:22px;margin:14px 0}
+.panel.danger{border-color:#572525}
+.panel.secret{border-color:#444}
+.label{color:#59675e;font-size:11px;letter-spacing:2px;margin-bottom:15px}
+p{line-height:1.7}
+.green{color:#79bb89}.red{color:#c94a4a}.dim{color:#59635d}.white{color:#eee}
+button,input{font:inherit}
+button{background:#070a08;color:#b9c9bf;border:1px solid #435147;padding:11px 15px;margin:5px 4px 5px 0;cursor:pointer}
+button:hover{background:#172019;border-color:#89a892}
+input{width:100%;background:#000;color:#cfe6d5;border:1px solid #38463d;padding:13px;outline:0;margin:5px 0}
+input:focus{border-color:#789b82}
+.log{white-space:pre-wrap;min-height:125px;color:#9da9a1;line-height:1.65}
+.progress{height:4px;background:#101610;margin:15px 0}.progress i{display:block;height:100%;background:#658d70;width:0}
+.archive{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.card{border:1px solid #1d2921;background:#060806;padding:12px;min-height:76px}
+.card b{color:#77877c}.card span{display:block;font-size:10px;color:#4e5952;margin-top:8px}
+.hidden{display:none!important}
+.glitch{animation:g .13s infinite alternate}@keyframes g{from{transform:translate(-1px)}to{transform:translate(1px)}}
+.shake{animation:s .08s 10}@keyframes s{25%{transform:translate(3px)}75%{transform:translate(-3px)}}
+.big{font-size:clamp(25px,6vw,52px);color:#ddd}
+.center{text-align:center}
+#overlay{position:fixed;inset:0;background:#000;z-index:1000;display:none;align-items:center;justify-content:center;text-align:center;padding:25px}
+#overlay.show{display:flex}
+#overlay .j{font-size:clamp(30px,10vw,100px);color:#eee}
+footer{text-align:center;color:#27312b;font-size:10px;padding:20px}
+@media(max-width:600px){#app{width:94%}.panel{padding:16px}.top{flex-direction:column;gap:5px}.archive{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="app">
 
+<header>
+ <div class="top"><span>ARQUIVO // 01</span><span id="clock">00:00:00</span></div>
+ <h1 id="mainTitle">A SENHA FINAL</h1>
+ <div class="sub">SISTEMA DE RECUPERAÇÃO // STATUS: DESCONHECIDO</div>
+</header>
+
+<section id="home" class="screen active">
+ <div class="panel">
+  <div class="label">TRANSMISSÃO RECEBIDA</div>
+  <div class="big">VOCÊ ENCONTROU O ARQUIVO.</div>
+  <p>Ele estava escondido atrás de uma página que deveria estar vazia.</p>
+  <p class="red">NÃO TENTE ADIVINHAR A SENHA.</p>
+  <p>O sistema vai tentar fazer você acreditar que já descobriu.</p>
+  <button onclick="begin()">INICIAR ARQUIVO</button>
+  <button onclick="show('manual')">COMO JOGAR</button>
+ </div>
+ <div class="panel">
+  <div class="label">SINAL</div>
+  <p class="dim">01000110 01000001 01010011 01000101</p>
+  <p class="dim">F A S E</p>
+ </div>
+</section>
+
+<section id="manual" class="screen">
+ <div class="panel">
+  <div class="label">MANUAL // RECUPERAÇÃO</div>
+  <h2>Não procure somente respostas.</h2>
+  <p>Cada fase pode esconder uma informação para outra fase.</p>
+  <p>Observe números, palavras, mensagens e mudanças no sistema.</p>
+  <p class="red">A Fase 21 não deveria existir.</p>
+  <p class="green">Existe também uma entrada que o sistema não mostra.</p>
+  <button onclick="show('home')">VOLTAR</button>
+  <button onclick="secretPrompt()">ACESSO RESTRITO</button>
+ </div>
+</section>
+
+<section id="archive" class="screen">
+ <div class="panel">
+  <div class="label">ARQUIVO RECUPERADO</div>
+  <div class="archive" id="cards"></div>
+ </div>
+ <div class="panel">
+  <div class="label">MENSAGEM DO SISTEMA</div>
+  <p id="systemMsg">Todos os registros parecem normais.</p>
+ </div>
+</section>
+
+<section id="game" class="screen">
+ <div class="panel">
+  <div class="label" id="phaseLabel">FASE 01</div>
+  <div class="progress"><i id="bar"></i></div>
+  <h2 id="phaseTitle"></h2>
+  <div class="log" id="phaseText"></div>
+  <div id="extra"></div>
+  <div id="answerArea"></div>
+  <p id="feedback" class="dim"></p>
+  <button id="continue" class="hidden" onclick="next()">CONTINUAR</button>
+  <button onclick="show('archive')">VOLTAR AO ARQUIVO</button>
+ </div>
+</section>
+
+<section id="final" class="screen">
+ <div class="panel">
+  <div class="label">ARQUIVO FINAL</div>
+  <div class="big">RECONSTRUÇÃO</div>
+  <p>Os fragmentos recuperados não formam uma senha comum.</p>
+  <p>Formam uma mensagem.</p>
+  <div class="panel">
+   <p class="green">“A senha nunca esteve escondida no arquivo.”</p>
+   <p>“Ela estava escondida em quem continuou procurando.”</p>
+  </div>
+  <input id="finalInput" placeholder="Digite a senha final...">
+  <button onclick="finish()">DESBLOQUEAR</button>
+  <p id="finalMsg"></p>
+ </div>
+</section>
+
+<section id="ending" class="screen">
+ <div class="panel center">
+  <div class="label">SISTEMA ENCERRADO</div>
+  <div class="big glitch">VOCÊ ABRIU.</div>
+  <p>Mas o arquivo não foi destruído.</p>
+  <p class="red">ELE FOI RECONSTRUÍDO.</p>
+  <p class="dim">ARQUIVO 02 // AGUARDANDO</p>
+  <button onclick="show('home')">REINICIAR</button>
+ </div>
+</section>
+
+<footer>ENIGMA // A SENHA FINAL // ARQUIVO 01</footer>
+</div>
+
+<div id="overlay"><div class="j" id="jumpText"></div></div>
+
+<script>
+const phases=[
+ {t:"O TECLADO",text:"Tenho uma chave, mas não abro nenhuma porra de porta. Tenho espaço, mas não sou um lugar. O que sou?",a:["teclado"],frag:"F"},
+ {t:"O BURACO",text:"Quanto mais você tira de mim, maior eu fico.",a:["buraco"],frag:"A"},
+ {t:"A FITA",text:"01000110 01000001 01010011 01000101\\n\\nO sistema traduziu sozinho.",a:["fase"],frag:"S"},
+ {t:"O SILÊNCIO",text:"A mensagem desapareceu antes que você terminasse de ler.\\n\\nDigite a palavra que o sistema apagou: SILÊNCIO.",a:["silencio","silêncio"],frag:"E"},
+ {t:"O RELÓGIO",text:"Tenho ponteiros, mas não aponto caminhos. Tenho números, mas não faço contas.",a:["relogio","relógio"],frag:"N"},
+ {t:"SEIS",text:"2 — 4 — 6 — 8 — ?",a:["10","dez"],frag:"A"},
+ {t:"A PORTA",text:"A porta não possui fechadura. Mesmo assim, pede uma SENHA.",a:["senha"],frag:"O"},
+ {t:"ECO",text:"E C O\\n\\nO sistema repetiu sua própria mensagem.",a:["eco"],frag:"E"},
+ {t:"TEMPO",text:"60 segundos. Quantos minutos?",a:["1","um"],frag:"S"},
+ {t:"O ARQUIVO",text:"Digite o nome deste arquivo.",a:["enigma","a senha final","senha final"],frag:"T"},
+ {t:"O PADRÃO",text:"2, 4, 6, 8, ?",a:["10","dez"],frag:"A"},
+ {t:"A FASE ESCONDIDA",text:"O sistema encontrou uma pasta chamada 12.\\n\\nEla não estava no mapa.\\n\\nDigite 12.",a:["12","doze"],frag:"12",secret:true},
+ {t:"A SOMBRA",text:"Ela aparece quando existe luz. Não pode ser segurada. Não pode ser guardada.",a:["sombra"],frag:"N"},
+ {t:"O CÓDIGO",text:"A=1. B=2. C=3.\\n\\nQuanto vale C?",a:["3","tres","três"],frag:"A"},
+ {t:"O OBSERVADOR",text:"Uma câmera está apontada para você.\\n\\nO sistema diz que ela está desligada.",a:["desligada","off"],frag:"O"},
+ {t:"A PERGUNTA",text:"Qual pergunta aparece em praticamente todos os arquivos?",a:["por que","porque","porquê"],frag:"M"},
+ {t:"SEM SAÍDA",text:"A única saída é escrever SAIR.",a:["sair"],frag:"E"},
+ {t:"O FIM",text:"Qual palavra significa final?",a:["fim"],frag:"N"},
+ {t:"QUASE",text:"Quantas letras existem em SENHA?",a:["5","cinco"],frag:"T"},
+ {t:"REGISTRO 20",text:"Digite novamente a palavra que define cada registro.",a:["fase"],frag:"A"},
+ {t:"REGISTRO 21",text:"ERRO.\\n\\nEste registro não pertence ao arquivo.\\n\\nCódigo: 2121",a:["2121"],frag:"21",jump:true}
+];
+
+let current=0,started=false,frags=[];
+
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");}
+function begin(){started=true;buildCards();show("archive")}
+function buildCards(){
+ const c=document.getElementById("cards");c.innerHTML="";
+ phases.forEach((p,i)=>{
+  const d=document.createElement("div");d.className="card";
+  d.innerHTML="<b>FASE "+String(i+1).padStart(2,"0")+"</b><span>"+(i<=current?"RECUPERADA":"BLOQUEADA")+"</span>";
+  d.onclick=()=>{if(i<=current){current=i;render();show("game")}};
+  c.appendChild(d);
+ });
+}
+function render(){
+ const p=phases[current];
+ document.getElementById("phaseLabel").textContent="FASE "+String(current+1).padStart(2,"0")+" // REGISTRO";
+ document.getElementById("phaseTitle").textContent=p.t;
+ document.getElementById("phaseText").textContent=p.text;
+ document.getElementById("bar").style.width=((current)/20*100)+"%";
+ document.getElementById("feedback").textContent="";
+ document.getElementById("continue").classList.add("hidden");
+ const extra=document.getElementById("extra");extra.innerHTML="";
+ if(current===11){
+  extra.innerHTML='<div class="panel danger"><span class="red">ARQUIVO OCULTO DETECTADO</span><br><br>FASE 12 NÃO CONSTAVA NA LISTA ORIGINAL.</div>';
+ }
+ if(current===20){
+  extra.innerHTML='<div class="panel danger"><span class="red">⚠ REGISTRO INVÁLIDO ⚠</span><br><br>ALGUÉM ADICIONOU ESTA FASE DEPOIS.</div>';
+ }
+ document.getElementById("answerArea").innerHTML='<input id="answer" autocomplete="off" placeholder="Digite a resposta..."><button onclick="answer()">ENVIAR</button>';
+ document.getElementById("answer").onkeydown=e=>{if(e.key==="Enter")answer()};
+}
+function norm(x){return x.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function answer(){
+ const p=phases[current],v=norm(document.getElementById("answer").value);
+ if(!v)return;
+ if(p.a.map(norm).includes(v)){
+  frags.push(p.frag);
+  document.getElementById("feedback").className="green";
+  document.getElementById("feedback").textContent="RESPOSTA ACEITA // FRAGMENTO RECUPERADO: "+p.frag;
+  document.getElementById("answerArea").innerHTML="";
+  document.getElementById("continue").classList.remove("hidden");
+  if(p.jump)setTimeout(jumpscare,500);
+  buildCards();
+ }else{
+  document.getElementById("feedback").className="red";
+  document.getElementById("feedback").textContent="NEGADO. O sistema ainda não reconhece essa resposta.";
+ }
+}
+function next(){
+ if(current<phases.length-1){current++;render();show("game")}
+ else show("final");
+}
+function jumpscare(){
+ const o=document.getElementById("overlay");
+ document.getElementById("jumpText").innerHTML="VOCÊ<br>NÃO<br>DEVERIA<br>ESTAR AQUI.";
+ o.classList.add("show");document.body.classList.add("shake");
+ setTimeout(()=>{o.classList.remove("show");document.body.classList.remove("shake")},1500);
+}
+function finish(){
+ const v=norm(document.getElementById("finalInput").value);
+ if(["a senha final","senha final","final","enigma"].includes(v)){
+  document.getElementById("finalMsg").innerHTML='<span class="green">SENHA ACEITA.</span>';
+  setTimeout(()=>show("ending"),800);
+ }else document.getElementById("finalMsg").innerHTML='<span class="red">Essa não é a senha. Talvez você tenha procurado no lugar errado.</span>';
+}
+function secretPrompt(){
+ const c=prompt("CÓDIGO DE MANUTENÇÃO:");
+ if(c==="12"){current=11;render();show("game")}
+ else if(c==="21"){current=20;render();show("game")}
+ else alert("ACESSO NEGADO.");
+}
+function clock(){
+ const d=new Date(),z=n=>String(n).padStart(2,"0");
+ document.getElementById("clock").textContent=z(d.getHours())+":"+z(d.getMinutes())+":"+z(d.getSeconds());
+}
+setInterval(clock,1000);clock();
+</script>
+</body>
+  </html>
